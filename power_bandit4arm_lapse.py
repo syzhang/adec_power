@@ -9,9 +9,9 @@ import pandas as pd
 from hbayesdm import rhat, print_fit, plot_hdi, hdi
 from hbayesdm.models import bandit4arm_lapse
 
-def sim_bandit4arm_lapse(param_dict, sd_dict, seed, 
+def sim_bandit4arm_lapse(param_dict, sd_dict, group_name, seed, 
                          num_sj=50, num_trial=200,
-                         save_name='bandit4arm_lapse'):
+                         model_name='bandit4arm_lapse'):
     """simulate 4 arm bandit data for multiple subjects"""
     multi_subject = []
     
@@ -26,7 +26,8 @@ def sim_bandit4arm_lapse(param_dict, sd_dict, seed,
         multi_subject.append(df_sj)
         
     df_out = pd.concat(multi_subject)
-    df_out.to_csv('./tmp_output/'+save_name+'.txt', sep='\t')
+    f_name = model_name+'_'+group_name+'_'+str(seed)
+    df_out.to_csv('./tmp_output/'+f_name+'.txt', sep='\t')
     print(df_out)
     
     # return df_out
@@ -118,20 +119,20 @@ if __name__ == "__main__":
 
     # healthy control parameter sd
     sd_dict_hc = {
-        'Arew': 4.8,  # reward sensitivity
-        'Apun': 4.8,  # punishment sensitivity
-        'R':    0.2,  # reward learning rate
-        'P':    0.2,  # punishment learning rate
-        'xi':   0.1   # lapse
+        'Arew': 4.87,  # reward sensitivity
+        'Apun': 4.83,  # punishment sensitivity
+        'R':    0.22,  # reward learning rate
+        'P':    0.15,  # punishment learning rate
+        'xi':   0.11   # lapse
     }
 
     # assumed patient parameters (based on Aylward 2019)
     sd_dict_pt = {
-        'Arew': 2.9,  # reward sensitivity
-        'Apun': 7.1,  # punishment sensitivity
-        'R':    0.3,  # reward learning rate
-        'P':    0.2,  # punishment learning rate
-        'xi':   0.1   # lapse
+        'Arew': 2.91,  # reward sensitivity
+        'Apun': 7.21,  # punishment sensitivity
+        'R':    0.30,  # reward learning rate
+        'P':    0.18,  # punishment learning rate
+        'xi':   0.10   # lapse
     }
 
     # parsing cl arguments
@@ -140,20 +141,21 @@ if __name__ == "__main__":
     subj_num = int(sys.argv[3]) # subject number to simulate
     trial_num = int(sys.argv[4]) # trial number to simulate
 
+    model_name = 'bandit4arm_lapse'
     if group_name == 'hc':
         # simulate hc subjects with given params
-        sim_bandit4arm_lapse(param_dict_hc, sd_dict_hc, seed=seed_num,num_sj=subj_num, num_trial=trial_num, save_name='bandit4arm_lapse_hc')
+        sim_bandit4arm_lapse(param_dict_hc, sd_dict_hc, group_name, seed=seed_num,num_sj=subj_num, num_trial=trial_num, model_name=model_name)
     elif group_name == 'pt':
         # simulate pt subjects with given params
-        sim_bandit4arm_lapse(param_dict_pt, sd_dict_pt, seed=seed_num, num_sj=subj_num, num_trial=trial_num,save_name='bandit4arm_lapse_pt')
+        sim_bandit4arm_lapse(param_dict_pt, sd_dict_pt, group_name, seed=seed_num, num_sj=subj_num, num_trial=trial_num, model_name=model_name)
     else:
         print('check group name (hc or pt)')
 
     # fit
     # Run the model and store results in "output"
-    output = bandit4arm_lapse('./tmp_output/'+'bandit4arm_lapse_'+group_name+'.txt', niter=2000, nwarmup=1000, nchain=4, ncore=1)
+    output = bandit4arm_lapse('./tmp_output/'+model_name+'_'+group_name+'_'+str(seed_num)+'.txt', niter=2000, nwarmup=1000, nchain=4, ncore=16)
     # saving
-    sfile = './tmp_output/'+group_name+'_sim_seed_'+str(seed_num)+'.pkl'
+    sfile = './tmp_output/'+group_name+'_sim_'+str(seed_num)+'.pkl'
     with open(sfile, 'wb') as op:
         pickle.dump(output.par_vals, op)
 
