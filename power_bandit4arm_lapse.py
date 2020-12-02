@@ -3,10 +3,8 @@ simulated power calculation for bandit 4-arm task (with lapse in model)
 """
 import sys
 import pickle
-import bz2
 import numpy as np
 import pandas as pd
-from hbayesdm import rhat, print_fit, plot_hdi, hdi
 from hbayesdm.models import bandit4arm_lapse
 
 def sim_bandit4arm_lapse(param_dict, sd_dict, group_name, seed, 
@@ -118,21 +116,36 @@ if __name__ == "__main__":
     }
 
     # healthy control parameter sd
-    sd_dict_hc = {
-        'Arew': 4.87,  # reward sensitivity
-        'Apun': 4.83,  # punishment sensitivity
-        'R':    0.22,  # reward learning rate
-        'P':    0.15,  # punishment learning rate
-        'xi':   0.11   # lapse
+    # sd_dict_hc = {
+    #     'Arew': 4.87,  # reward sensitivity
+    #     'Apun': 4.83,  # punishment sensitivity
+    #     'R':    0.22,  # reward learning rate
+    #     'P':    0.15,  # punishment learning rate
+    #     'xi':   0.11   # lapse
+    # }
+    # assumed lower variance (same with patients) 
+    sd_dict_hc= {
+        'Arew': 2.91,  # reward sensitivity
+        'Apun': 2.21,  # punishment sensitivity
+        'R':    0.1,  # reward learning rate
+        'P':    0.1,  # punishment learning rate
+        'xi':   0.05   # lapse
     }
-
     # assumed patient parameters (based on Aylward 2019)
+    # sd_dict_pt = {
+    #     'Arew': 2.91,  # reward sensitivity
+    #     'Apun': 7.21,  # punishment sensitivity
+    #     'R':    0.30,  # reward learning rate
+    #     'P':    0.18,  # punishment learning rate
+    #     'xi':   0.10   # lapse
+    # }
+    # assumed lower variance in patients 
     sd_dict_pt = {
         'Arew': 2.91,  # reward sensitivity
-        'Apun': 7.21,  # punishment sensitivity
-        'R':    0.30,  # reward learning rate
-        'P':    0.18,  # punishment learning rate
-        'xi':   0.10   # lapse
+        'Apun': 2.21,  # punishment sensitivity
+        'R':    0.1,  # reward learning rate
+        'P':    0.1,  # punishment learning rate
+        'xi':   0.05   # lapse
     }
 
     # parsing cl arguments
