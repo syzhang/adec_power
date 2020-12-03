@@ -170,6 +170,7 @@ if __name__ == "__main__":
     # saving
     sfile = './tmp_output/'+group_name+'_sim_'+str(seed_num)+'.pkl'
     with open(sfile, 'wb') as op:
-        pickle.dump(output.par_vals, op)
+        tmp = { k: v for k, v in output.par_vals.items() if k in ['mu_Arew', 'mu_Apun', 'mu_R', 'mu_P', 'mu_xi'] } # dict comprehension
+        pickle.dump(tmp, op)
 
 
