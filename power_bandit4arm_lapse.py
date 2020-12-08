@@ -1,7 +1,7 @@
 """
 simulated power calculation for bandit 4-arm task (with lapse in model)
 """
-import sys
+import os, sys
 import pickle
 import numpy as np
 import pandas as pd
@@ -24,10 +24,13 @@ def sim_bandit4arm_lapse(param_dict, sd_dict, group_name, seed,
         multi_subject.append(df_sj)
         
     df_out = pd.concat(multi_subject)
+    # saving output
+    output_dir = './tmp_output/bandit_sim/'
+    if not os.path.isdir(output_dir):
+        os.mkdir(output_dir)
     f_name = model_name+'_'+group_name+'_'+str(seed)
-    df_out.to_csv('./tmp_output/'+f_name+'.txt', sep='\t')
+    df_out.to_csv(output_dir+f_name+'.txt', sep='\t', index=False)
     print(df_out)
-    
     # return df_out
 
 def model_bandit4arm_lapse(param_dict, subjID, num_trial=200):
@@ -131,6 +134,7 @@ if __name__ == "__main__":
         'P':    0.1,  # punishment learning rate
         'xi':   0.05   # lapse
     }
+
     # assumed patient parameters (based on Aylward 2019)
     # sd_dict_pt = {
     #     'Arew': 2.91,  # reward sensitivity
@@ -166,9 +170,13 @@ if __name__ == "__main__":
 
     # fit
     # Run the model and store results in "output"
-    output = bandit4arm_lapse('./tmp_output/'+model_name+'_'+group_name+'_'+str(seed_num)+'.txt', niter=2000, nwarmup=1000, nchain=4, ncore=16)
+    output = bandit4arm_lapse('./tmp_output/bandit_sim/'+model_name+'_'+group_name+'_'+str(seed_num)+'.txt', niter=2000, nwarmup=1000, nchain=4, ncore=1)
+
+    # debug
+    print(output.fit)
+
     # saving
-    sfile = './tmp_output/'+group_name+'_sim_'+str(seed_num)+'.pkl'
+    sfile = './tmp_output/bandit_sim/'+group_name+'_sim_'+str(seed_num)+'.pkl'
     with open(sfile, 'wb') as op:
         tmp = { k: v for k, v in output.par_vals.items() if k in ['mu_Arew', 'mu_Apun', 'mu_R', 'mu_P', 'mu_xi'] } # dict comprehension
         pickle.dump(tmp, op)
