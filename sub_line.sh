@@ -5,16 +5,16 @@
 #conda install clang_osx-64 clangxx_osx-64 -c anaconda
 
 #run sims for bandit
-for sim_num in {1..50}
+for sim_num in {0..50}
 do
 echo "submitted job simulation with seed $sim_num "
-fsl_sub -T 350 -R 64 python power_bandit4arm_lapse.py pt $sim_num 200 200
+fsl_sub -T 250 -R 64 python power_bandit4arm_lapse.py pt $sim_num 70 300
 done
 
-for sim_num in {1..50}
+for sim_num in {0..50}
 do
 echo "submitted job simulation with seed $sim_num "
-fsl_sub -T 350 -R 64 python power_bandit4arm_lapse.py hc $sim_num 250 200
+fsl_sub -T 300 -R 64 python power_bandit4arm_lapse.py hc $sim_num 90 200
 done
 
 # hack conda environment
