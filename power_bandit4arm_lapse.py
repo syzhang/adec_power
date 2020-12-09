@@ -52,15 +52,18 @@ def model_bandit4arm_lapse(param_dict, subjID, num_trial=200):
         tmpDeck = int(np.random.choice(np.arange(4), size=1, p=pD, replace=True))
 
         # compute tmpRew and tmpPun
-        tmpRew = np.random.choice([0,1], size=1, replace=True, p=[1-rew_prob[t,tmpDeck], rew_prob[t, tmpDeck]])
-        tmpPun = np.random.choice([0,-1], size=1, replace=True, p=[1-pun_prob[t,tmpDeck], pun_prob[t, tmpDeck]])
+        tmpRew = int(np.random.binomial(size=1, n=1, p=rew_prob[t, tmpDeck]))
+        tmpPun = -1 * int(np.random.binomial(size=1, n=1, p=pun_prob[t, tmpDeck])) # punishment=-1
+
+        # tmpRew = np.random.choice([0,1], size=1, replace=True, p=[1-rew_prob[t,tmpDeck], rew_prob[t, tmpDeck]])
+        # tmpPun = np.random.choice([0,-1], size=1, replace=True, p=[1-pun_prob[t,tmpDeck], pun_prob[t, tmpDeck]])
 
         # compute PE and update values
         PEr = param_dict['R']*tmpRew - Qr[tmpDeck]
         PEp = param_dict['P']*tmpPun - Qp[tmpDeck]
         PEr_fic = -Qr
         PEp_fic = -Qp
-        
+
         Qr_chosen, Qp_chosen = [], []
         Qr_chosen = Qr[tmpDeck]
         Qp_chosen = Qp[tmpDeck]
@@ -71,18 +74,12 @@ def model_bandit4arm_lapse(param_dict, subjID, num_trial=200):
         # replace Q values of chosen deck with correct values
         Qr[tmpDeck] = Qr_chosen + param_dict['Arew'] * PEr
         Qp[tmpDeck] = Qp_chosen + param_dict['Apun'] * PEp
-        
+
         # sum Q
         Qsum = Qr + Qp
         
-        # normalise to avoid overflow
-        if sum(Qsum) != 0.:
-            Qsum_norm = Qsum / Qsum.sum()
-        else: 
-            Qsum_norm = Qsum
-            
         # update pD for next trial
-        pD_pre = np.exp(Qsum_norm) / sum(np.exp(Qsum_norm))
+        pD_pre = np.exp(Qsum) / sum(np.exp(Qsum))
 
         # xi/lapse
         pD = pD_pre * (1.-param_dict['xi']) + param_dict['xi']/4.
@@ -92,60 +89,44 @@ def model_bandit4arm_lapse(param_dict, subjID, num_trial=200):
         
     df_out = pd.DataFrame(data_out)
     df_out.columns = ['subjID', 'trial', 'choice', 'gain', 'loss']
-#     print(df_out)
+
     return df_out
 
 if __name__ == "__main__":
-    # healthy control parameters
+    # healthy control parameters (based on FAPIA)
     param_dict_hc = {
-        'Arew': 9.61,  # reward sensitivity
-        'Apun': 6.67,  # punishment sensitivity
-        'R':    0.25,  # reward learning rate
-        'P':    0.31,  # punishment learning rate
-        'xi':   0.13   # lapse
+        'Arew': 0.519,  # reward learning rate
+        'Apun': 0.307,  # punishment learning rate
+        'R':    9.248,  # reward sensitivity
+        'P':    8.643,  # punishment sensitivity
+        'xi':   0.018   # lapse
     }
 
-    # assumed patient parameters (based on Aylward 2019)
+    # assumed patient parameters 
     param_dict_pt = {
-        'Arew': 7.47,  # reward sensitivity
-        'Apun': 7.41,  # punishment sensitivity
-        'R':    0.31,  # reward learning rate
-        'P':    0.51,  # punishment learning rate
-        'xi':   0.21   # lapse
+        'Arew': 0.648,  # reward learning rate
+        'Apun': 0.337,  # punishment learning rate
+        'R':    10.583,  # reward sensitivity
+        'P':    10.109,  # punishment sensitivity
+        'xi':   0.071   # lapse
     }
 
-    # healthy control parameter sd
-    # sd_dict_hc = {
-    #     'Arew': 4.87,  # reward sensitivity
-    #     'Apun': 4.83,  # punishment sensitivity
-    #     'R':    0.22,  # reward learning rate
-    #     'P':    0.15,  # punishment learning rate
-    #     'xi':   0.11   # lapse
-    # }
-    # assumed lower variance (same with patients) 
+    # control sd
     sd_dict_hc= {
-        'Arew': 2.91,  # reward sensitivity
-        'Apun': 2.21,  # punishment sensitivity
-        'R':    0.1,  # reward learning rate
-        'P':    0.1,  # punishment learning rate
-        'xi':   0.05   # lapse
+        'Arew': 0.033,  # reward learning rate
+        'Apun': 0.030,  # punishment learning rate
+        'R':    0.941,  # reward sensitivity
+        'P':    1.248,  # punishment sensitivity
+        'xi':   0.006   # lapse
     }
 
-    # assumed patient parameters (based on Aylward 2019)
-    # sd_dict_pt = {
-    #     'Arew': 2.91,  # reward sensitivity
-    #     'Apun': 7.21,  # punishment sensitivity
-    #     'R':    0.30,  # reward learning rate
-    #     'P':    0.18,  # punishment learning rate
-    #     'xi':   0.10   # lapse
-    # }
-    # assumed lower variance in patients 
+    # patient sd
     sd_dict_pt = {
-        'Arew': 2.91,  # reward sensitivity
-        'Apun': 2.21,  # punishment sensitivity
-        'R':    0.1,  # reward learning rate
-        'P':    0.1,  # punishment learning rate
-        'xi':   0.05   # lapse
+        'Arew': 0.056,  # reward learning rate
+        'Apun': 0.051,  # punishment learning rate
+        'R':    1.128,  # reward sensitivity
+        'P':    1.129,  # punishment sensitivity
+        'xi':   0.015   # lapse
     }
 
     # parsing cl arguments
@@ -166,8 +147,7 @@ if __name__ == "__main__":
 
     # fit
     # Run the model and store results in "output"
-    # output = bandit4arm_lapse('./tmp_output/bandit_sim/'+model_name+'_'+group_name+'_'+str(seed_num)+'.txt', niter=2000, nwarmup=1000, nchain=4, ncore=1)
-    output = bandit4arm_lapse('example', niter=2000, nwarmup=1000, nchain=4, ncore=16)
+    output = bandit4arm_lapse('./tmp_output/bandit_sim/'+model_name+'_'+group_name+'_'+str(seed_num)+'.txt', niter=3000, nwarmup=1500, nchain=4, ncore=16)
     
     # debug
     print(output.fit)
