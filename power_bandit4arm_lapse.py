@@ -7,9 +7,7 @@ import numpy as np
 import pandas as pd
 from hbayesdm.models import bandit4arm_lapse
 
-def sim_bandit4arm_lapse(param_dict, sd_dict, group_name, seed, 
-                         num_sj=50, num_trial=200,
-                         model_name='bandit4arm_lapse'):
+def sim_bandit4arm_lapse(param_dict, sd_dict, group_name, seed, num_sj=50, num_trial=200, model_name='bandit4arm_lapse'):
     """simulate 4 arm bandit data for multiple subjects"""
     multi_subject = []
     
@@ -20,7 +18,7 @@ def sim_bandit4arm_lapse(param_dict, sd_dict, group_name, seed,
         sample_params[key] = np.random.normal(param_dict[key], sd_dict[key], size=1)[0]
     
     for sj in range(num_sj):
-        df_sj = model_bandit4arm_lapse(param_dict, sj, num_trial)
+        df_sj = model_bandit4arm_lapse(sample_params, sj, num_trial)
         multi_subject.append(df_sj)
         
     df_out = pd.concat(multi_subject)
@@ -54,10 +52,8 @@ def model_bandit4arm_lapse(param_dict, subjID, num_trial=200):
         tmpDeck = int(np.random.choice(np.arange(4), size=1, p=pD, replace=True))
 
         # compute tmpRew and tmpPun
-        tmpRew = np.random.choice([0,1], size=1, replace=True, 
-                                  p=[1-rew_prob[t,tmpDeck], rew_prob[t, tmpDeck]])
-        tmpPun = np.random.choice([0,-1], size=1, replace=True, 
-                                  p=[1-pun_prob[t,tmpDeck], pun_prob[t, tmpDeck]])
+        tmpRew = np.random.choice([0,1], size=1, replace=True, p=[1-rew_prob[t,tmpDeck], rew_prob[t, tmpDeck]])
+        tmpPun = np.random.choice([0,-1], size=1, replace=True, p=[1-pun_prob[t,tmpDeck], pun_prob[t, tmpDeck]])
 
         # compute PE and update values
         PEr = param_dict['R']*tmpRew - Qr[tmpDeck]
@@ -170,8 +166,9 @@ if __name__ == "__main__":
 
     # fit
     # Run the model and store results in "output"
-    output = bandit4arm_lapse('./tmp_output/bandit_sim/'+model_name+'_'+group_name+'_'+str(seed_num)+'.txt', niter=2000, nwarmup=1000, nchain=4, ncore=1)
-
+    # output = bandit4arm_lapse('./tmp_output/bandit_sim/'+model_name+'_'+group_name+'_'+str(seed_num)+'.txt', niter=2000, nwarmup=1000, nchain=4, ncore=1)
+    output = bandit4arm_lapse('example', niter=2000, nwarmup=1000, nchain=4, ncore=16)
+    
     # debug
     print(output.fit)
 

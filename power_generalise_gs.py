@@ -126,7 +126,7 @@ def sim_generalise_gs(param_dict, sd_dict, group_name, seed,
         sample_params[key] = np.random.normal(param_dict[key], sd_dict[key], size=1)[0]
     
     for sj in range(num_sj):
-        df_sj = model_generalise_gs(param_dict, sj, num_trial)
+        df_sj = model_generalise_gs(sample_params, sj, num_trial)
         multi_subject.append(df_sj)
         
     df_out = pd.concat(multi_subject)
@@ -144,55 +144,38 @@ if __name__ == "__main__":
         'sigma_a': 0.75,  # generalisation param for shock
         'sigma_n': 0.028,  # generalisation param for no shock
         'eta':    0.5,     # p_h dynamic learning rate
-        'kappa':  0.5,    # p_h dynamic learning rate
+        'kappa':  0.4,    # p_h dynamic learning rate
         'beta': 1.,       # softmax beta
         'bias': 0.5      # softmax bias
-    }
-
-    # sd from paper
-    # sd_dict_hc = {
-    #     'sigma_a': 0.29,  # generalisation param for shock
-    #     'sigma_n': 0.03,  # generalisation param for no shock
-    #     'eta':    0.1,     # p_h dynamic learning rate
-    #     'kappa':  0.1,    # p_h dynamic learning rate
-    #     'beta': 0.05,       # softmax beta
-    #     'bias': 0.05      # softmax bias
-    # }
-    sd_dict_hc = {
-        'sigma_a': 0.000001,  # generalisation param for shock
-        'sigma_n': 0.000001,  # generalisation param for no shock
-        'eta':    0.000001,     # p_h dynamic learning rate
-        'kappa':  0.000001,    # p_h dynamic learning rate
-        'beta': 0.000001,       # softmax beta
-        'bias': 0.000001      # softmax bias
     }
     # parameters from paper
     param_dict_pt = {
         'sigma_a': 0.15,  # generalisation param for shock
         'sigma_n': 0.088,  # generalisation param for no shock
-        'eta':    0.5,     # p_h dynamic learning rate
+        'eta':    0.2,     # p_h dynamic learning rate
         'kappa':  0.5,    # p_h dynamic learning rate
-        'beta': 1.,       # softmax beta
-        'bias': 0.5      # softmax bias
+        'beta': 1.5,       # softmax beta
+        'bias': 0.7      # softmax bias
+    }
+    # sd from paper
+    sd_dict_hc = {
+        'sigma_a': 0.29,  # generalisation param for shock
+        'sigma_n': 0.03,  # generalisation param for no shock
+        'eta':    0.01,     # p_h dynamic learning rate
+        'kappa':  0.05,    # p_h dynamic learning rate
+        'beta': 0.05,       # softmax beta
+        'bias': 0.05      # softmax bias
+    }
+    # sd from paper
+    sd_dict_pt = {
+        'sigma_a': 0.29,  # generalisation param for shock
+        'sigma_n': 0.03,  # generalisation param for no shock
+        'eta':    0.01,     # p_h dynamic learning rate
+        'kappa':  0.05,    # p_h dynamic learning rate
+        'beta': 0.05,       # softmax beta
+        'bias': 0.05      # softmax bias
     }
 
-    # sd from paper
-    # sd_dict_pt = {
-    #     'sigma_a': 0.29,  # generalisation param for shock
-    #     'sigma_n': 0.03,  # generalisation param for no shock
-    #     'eta':    0.1,     # p_h dynamic learning rate
-    #     'kappa':  0.1,    # p_h dynamic learning rate
-    #     'beta': 0.05,       # softmax beta
-    #     'bias': 0.05      # softmax bias
-    # }
-    sd_dict_pt = {
-        'sigma_a': 0.000001,  # generalisation param for shock
-        'sigma_n': 0.000001,  # generalisation param for no shock
-        'eta':    0.000001,     # p_h dynamic learning rate
-        'kappa':  0.000001,    # p_h dynamic learning rate
-        'beta': 0.000001,       # softmax beta
-        'bias': 0.000001      # softmax bias
-    }
     # parsing cl arguments
     group_name = sys.argv[1] # pt=patient, hc=control
     seed_num = int(sys.argv[2]) # seed number
@@ -211,7 +194,7 @@ if __name__ == "__main__":
 
     # fit
     # Run the model and store results in "output"
-    output = generalise_gs('./tmp_output/generalise_sim/'+model_name+'_'+group_name+'_'+str(seed_num)+'.txt', niter=2000, nwarmup=1000, nchain=4, ncore=1)
+    output = generalise_gs('./tmp_output/generalise_sim/'+model_name+'_'+group_name+'_'+str(seed_num)+'.txt', niter=3000, nwarmup=1500, nchain=4, ncore=16)
 
     # debug
     print(output.fit)
