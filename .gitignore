@@ -1,5 +1,6 @@
 tmp_output/
 gen_output/
+split_files/
 cached*
 python.*
 .vscode/
