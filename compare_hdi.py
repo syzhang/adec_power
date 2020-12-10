@@ -9,7 +9,7 @@ from hbayesdm import rhat, print_fit, plot_hdi, hdi
 import arviz as az
 from matplotlib import pyplot as plt
 
-def comp_hdi(model_name, param_ls, sort=False, draws=1000, seed=123):
+def comp_hdi(model_name, param_ls, sort=True, draw_idx=50, draws=1000, seed=123):
     """
     compare hdi by drawing simulations
     """
@@ -24,8 +24,8 @@ def comp_hdi(model_name, param_ls, sort=False, draws=1000, seed=123):
         # random compare n draws
         for comp in range(1,draws):
             # load MCMC traces with matching seeds (not number of subjects)
-            hc_file = os.path.join(output_dir, 'hc_sim_'+str(int(np.random.randint(1,50,1)))+'.pkl')
-            pt_file = os.path.join(output_dir, 'pt_sim_'+str(int(np.random.randint(1,50,1)))+'.pkl')
+            hc_file = os.path.join(output_dir, 'hc_sim_'+str(int(np.random.randint(0,draw_idx,1)))+'.pkl')
+            pt_file = os.path.join(output_dir, 'pt_sim_'+str(int(np.random.randint(0,draw_idx,1)))+'.pkl')
 
             if os.path.isfile(hc_file) and os.path.isfile(pt_file):
                 # print(hc_file, pt_file)
@@ -168,4 +168,4 @@ if __name__ == "__main__":
         param_ls = ['mu_sigma_a', 'mu_sigma_n', 'mu_eta', 'mu_kappa', 'mu_beta', 'mu_bias']
     else:
         print('model must be bandit or generalise.')
-    comp_hdi(model_name, param_ls, sort=True, draws=1000)
+    comp_hdi(model_name, param_ls, sort=True, draw_idx=14, draws=200)
