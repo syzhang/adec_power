@@ -168,4 +168,4 @@ if __name__ == "__main__":
         param_ls = ['mu_sigma_a', 'mu_sigma_n', 'mu_eta', 'mu_kappa', 'mu_beta', 'mu_bias']
     else:
         print('model must be bandit or generalise.')
-    comp_hdi(model_name, param_ls, sort=True, draw_idx=51, draws=1000)
+    comp_hdi(model_name, param_ls, sort=False, draw_idx=51, draws=1000)
