@@ -34,15 +34,15 @@ if __name__ == "__main__":
     # split_txt(num_files=44)
 
     # parsing cl arguments
-    fc = int(sys.argv[1]) # file count
+    # fc = int(sys.argv[1]) # file count
 
-    # fit
-    # Run the model and store results in "output"
-    output = generalise_gs(f'./split_files/AMT_{fc:02d}.txt', niter=3000, nwarmup=1500, nchain=4, ncore=16)
+    # # fit
+    # # Run the model and store results in "output"
+    # output = generalise_gs(f'./split_files/AMT_{fc:02d}.txt', niter=3000, nwarmup=1500, nchain=4, ncore=16)
 
-    # using pystan.misc.to_dataframe -function works also with the older fit objects
-    df = pystan.misc.to_dataframe(output.fit)
-    df.to_csv(f'./tmp_output/AMT_{fc:02d}.csv', index=None)
+    # # using pystan.misc.to_dataframe -function works also with the older fit objects
+    # df = pystan.misc.to_dataframe(output.fit)
+    # df.to_csv(f'./tmp_output/AMT_{fc:02d}.csv', index=None)
 
     # # sub
     # # fsl_sub -T 30 -R 64 python fit_AMT.py 0
@@ -54,9 +54,9 @@ if __name__ == "__main__":
 
     #######################################################
     # # fit only a single file
-    # output = generalise_gs('./AMT_behavioural.txt', niter=3000, nwarmup=1500, nchain=4, ncore=16)
+    output = generalise_gs('./AMT_behavioural.txt', niter=3000, nwarmup=1500, nchain=4, ncore=16)
 
-    # # using pystan.misc.to_dataframe -function works also with the older fit objects
-    # df = pystan.misc.to_dataframe(output.fit)
-    # df.to_csv('./tmp_output/AMT_behavioural.csv', index=None)
+    # using pystan.misc.to_dataframe -function works also with the older fit objects
+    df = pystan.misc.to_dataframe(output.fit)
+    df.to_csv('./tmp_output/AMT_behavioural.csv', index=None)
     # # fsl_sub -T 30*50 -R 64 python fit_AMT.py
