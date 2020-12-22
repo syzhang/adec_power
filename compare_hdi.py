@@ -9,6 +9,56 @@ from hbayesdm import rhat, print_fit, plot_hdi, hdi
 import arviz as az
 from matplotlib import pyplot as plt
 
+def comp_hdi_mean(model_name, param_ls, sort=True, draw_idx=50, draws=1000, seed=123):
+    """
+    compare hdi by drawing simulations (trace means)
+    """
+    # define sim dir
+    output_dir = './tmp_output/'+model_name+'_sim/'
+    np.random.seed(seed)
+    significant_df = []
+    df_out = []
+    # find sim results in groups
+    for key in param_ls:
+        bounds = []
+        # random compare n draws
+        for comp in range(1,draws):
+            # load MCMC traces with matching seeds (not number of subjects)
+            hc_file = os.path.join(output_dir, 'hc_sim_'+str(int(np.random.randint(0,draw_idx,1)))+'.pkl')
+            pt_file = os.path.join(output_dir, 'pt_sim_'+str(int(np.random.randint(0,draw_idx,1)))+'.pkl')
+
+            if os.path.isfile(hc_file) and os.path.isfile(pt_file):
+                # print(hc_file, pt_file)
+                with open(hc_file, 'rb') as hc:
+                    hc_dict = pickle.load(hc)
+                with open(pt_file, 'rb') as pt:
+                    pt_dict = pickle.load(pt)
+
+                # calculate lower bounds of simulation using difference
+                hdi_bounds = hdi_diff(key, hc_dict, pt_dict)
+                # store hdi bounds
+                bounds.append(hdi_bounds)
+                # store mean
+                df_tmp = pd.DataFrame({
+                    'param':[key,key], 
+                    'param_mean':[np.mean(hc_dict[key]), np.mean(pt_dict[key])],
+                    'group':['control','patient'],
+                    'hdi_low':[hdi_bounds[0],hdi_bounds[0]], 
+                    'hdi_high':[hdi_bounds[1],hdi_bounds[1]],
+                    'param_std':[np.std(hc_dict[key]), np.std(pt_dict[key])]})
+                df_out.append(df_tmp)
+        # percentage of significant draws (ie bounds doesn't encompass 0)
+        significant_pc = hdi_stats(key, bounds)
+        significant_df.append(significant_pc)
+
+    # save significant calculation
+    df_sig = pd.DataFrame({'parameter': param_ls,
+                        'significant_percent': significant_df},index=None)
+    df_sig.to_csv('./figs/'+model_name+'/significance_pc.csv')
+    # save df_out
+    out = pd.concat(df_out)
+    out.to_csv('./figs/'+model_name+'/params.csv',index=None)
+
 def comp_hdi(model_name, param_ls, sort=True, draw_idx=50, draws=1000, seed=123):
     """
     compare hdi by drawing simulations
@@ -156,6 +206,28 @@ def plot_hdi_diff(model_name, param_key, diff_dict, sort, credible_interval=0.94
     fig = ax.get_figure()
     fig.savefig(save_dir+save_name)
 
+def plot_violin_params(csv_params):
+    """plot violin of param means"""
+    import seaborn as sns
+    sns.set_theme(style="whitegrid")
+    df = pd.read_csv(csv_params)
+    param_ls = np.unique(df['param'])
+    n_param = len(param_ls)
+    fig, ax = plt.subplots(1,n_param,figsize=(9,6))
+    for n in range(n_param):
+        g= sns.violinplot(data=df[df['param']==param_ls[n]], x="param", y="param_mean", hue="group", split=True, inner="quart", linewidth=1,palette={"patient": "b", "control": ".85"}, ax=ax[n])
+        sns.despine(left=True)
+        if n>0:
+            ax[n].get_legend().remove()
+            g.set(ylabel=None)
+            g.set(xlabel=None)
+    # save fig
+    save_dir = './figs/'+model_name+'/'
+    if not os.path.isdir(save_dir):
+        os.mkdir(save_dir)
+    save_name = 'param_mean.png'
+    fig.savefig(save_dir+save_name)
+
 if __name__ == "__main__":
     # arg
     model_name = sys.argv[1] # which model sims to compare
@@ -168,4 +240,6 @@ if __name__ == "__main__":
         param_ls = ['mu_sigma_a', 'mu_sigma_n', 'mu_eta', 'mu_kappa', 'mu_beta', 'mu_bias']
     else:
         print('model must be bandit or generalise.')
-    comp_hdi(model_name, param_ls, sort=False, draw_idx=51, draws=1000)
+    # comp_hdi(model_name, param_ls, sort=False, draw_idx=51, draws=1000)
+    comp_hdi_mean(model_name, param_ls, sort=False, draw_idx=51, draws=1000)
+    plot_violin_params(f'./figs/{model_name}/params.csv')

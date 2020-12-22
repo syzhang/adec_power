@@ -42,8 +42,8 @@ def draw_cue(num_trial):
 def model_generalise_gs(param_dict, subjID, num_trial=190):
     """simulate shapes, avoid actions, and shock outcomes"""
     # load predefined image sequences (38 trials x 5 blocks)
-    trial_type = np.squeeze(pd.read_csv('./generalise_stim.csv').values) # 1:7
-    # trial_type = draw_cue(num_trial)
+    # trial_type = np.squeeze(pd.read_csv('./generalise_stim.csv').values) # 1:7
+    trial_type = draw_cue(num_trial)
     num_state = len(np.unique(trial_type))
 
     # initialise values (values from AN's VBA code)
@@ -140,40 +140,41 @@ def sim_generalise_gs(param_dict, sd_dict, group_name, seed,
 
 if __name__ == "__main__":
     # parameters AMT dataset (highest 10% approx patient params, low 40% approx as control params)
+    # params made up
     param_dict_hc = {
-        'sigma_a': 0.669,  # generalisation param for shock
-        'sigma_n': 0.0576,  # generalisation param for no shock
-        'eta':    0.172,     # p_h dynamic learning rate
-        'kappa':  0.738,    # p_h dynamic learning rate
-        'beta': 9.598,       # softmax beta
-        'bias': 0.306      # softmax bias
+        'sigma_a': 0.60,  # generalisation param for shock
+        'sigma_n': 0.06,  # generalisation param for no shock
+        'eta':    0.17,     # p_h dynamic learning rate
+        'kappa':  0.75,    # p_h dynamic learning rate
+        'beta': 9.5,       # softmax beta
+        'bias': 0.3      # softmax bias
     }
     # hc sd
     sd_dict_hc = {
-        'sigma_a': 0.24,  # generalisation param for shock
-        'sigma_n': 0.04,  # generalisation param for no shock
-        'eta':    0.20,     # p_h dynamic learning rate
-        'kappa':  0.26,    # p_h dynamic learning rate
-        'beta': 8.95,       # softmax beta
-        'bias': 0.14      # softmax bias
+        'sigma_a': 0.1,  # generalisation param for shock
+        'sigma_n': 0.01,  # generalisation param for no shock
+        'eta':    0.1,     # p_h dynamic learning rate
+        'kappa':  0.2,    # p_h dynamic learning rate
+        'beta': 3,       # softmax beta
+        'bias': 0.1      # softmax bias
     }
     # patient params
     param_dict_pt = {
-        'sigma_a': 0.735,  # generalisation param for shock
-        'sigma_n': 0.0491,  # generalisation param for no shock
-        'eta':    0.181,     # p_h dynamic learning rate
-        'kappa':  0.764,    # p_h dynamic learning rate
-        'beta': 9.636,       # softmax beta
-        'bias': 0.311      # softmax bias
+        'sigma_a': 0.8,  # generalisation param for shock
+        'sigma_n': 0.03,  # generalisation param for no shock
+        'eta':    0.18,     # p_h dynamic learning rate
+        'kappa':  0.76,    # p_h dynamic learning rate
+        'beta': 5.3,       # softmax beta
+        'bias': 0.3      # softmax bias
     }
     # patient sd
     sd_dict_pt = {
-        'sigma_a': 0.21,  # generalisation param for shock
-        'sigma_n': 0.023,  # generalisation param for no shock
-        'eta':    0.20,     # p_h dynamic learning rate
-        'kappa':  0.24,    # p_h dynamic learning rate
-        'beta': 6.28,       # softmax beta
-        'bias': 0.17      # softmax bias
+        'sigma_a': 0.1,  # generalisation param for shock
+        'sigma_n': 0.01,  # generalisation param for no shock
+        'eta':    0.10,     # p_h dynamic learning rate
+        'kappa':  0.2,    # p_h dynamic learning rate
+        'beta': 3,       # softmax beta
+        'bias': 0.1      # softmax bias
     }
 
     # parsing cl arguments
