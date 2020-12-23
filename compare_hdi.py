@@ -219,21 +219,22 @@ def plot_violin_params(csv_params, model_name, n_perm):
     df = pd.read_csv(csv_params)
     param_ls = np.unique(df['param'])
     n_param = len(param_ls)
-    fig, ax = plt.subplots(1,n_param,figsize=(9,6))
+    fig, ax = plt.subplots(1,n_param,figsize=(7,5))
     for n in range(n_param):
         g= sns.violinplot(data=df[df['param']==param_ls[n]], x="param", y="param_mean", hue="group", split=True, inner="quart", linewidth=1,palette={"patient": "b", "control": ".85"}, ax=ax[n])
         sns.despine(left=True)
         if n>0:
-            ax[n].get_legend().remove()
             g.set(ylabel=None)
+        ax[n].get_legend().remove()
         g.set(xlabel=None)
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     plt.suptitle(f'Fitted model parameter mean distribution from simulated data \n ({model_name} task, {n_perm} permutations)')
     # save fig
     save_dir = './figs/'+model_name+'/'
     if not os.path.isdir(save_dir):
         os.mkdir(save_dir)
     save_name = 'param_mean.png'
-    fig.savefig(save_dir+save_name)
+    fig.savefig(save_dir+save_name,bbox_inches='tight',pad_inches=0)
 
 def plot_hdi_permutations(csv_params, model_name, n_perm):
     """plot hdi for all permutations"""
@@ -242,7 +243,7 @@ def plot_hdi_permutations(csv_params, model_name, n_perm):
     df = pd.read_csv(csv_params)
     param_ls = np.unique(df['param'])
     for param in param_ls:
-        fig, ax = plt.subplots(figsize=(9,6))
+        fig, ax = plt.subplots(figsize=(6,4))
         df_tmp = df[(df['param']==param) & (df['group']=='control')]
         df_tmp_sort = df_tmp.sort_values(by=['hdi_high'],ascending=True)
         fill_indicator = sum(df_tmp_sort['hdi_high']>0)<sum(df_tmp_sort['hdi_high']<=0)
@@ -258,7 +259,6 @@ def plot_hdi_permutations(csv_params, model_name, n_perm):
                     fill_range.append(cnt)
             cnt += 1
         plt.fill_between(fill_range, min(df_tmp_sort['hdi_low']), max(df_tmp_sort['hdi_high']), facecolor='gray', alpha=0.5) 
-
         plt.xlabel(param)
         plt.ylabel('95% HDI')
         plt.suptitle(f'Parameter HDI from simulated data \n ({model_name} task, each line represents one permutation)')
@@ -267,7 +267,7 @@ def plot_hdi_permutations(csv_params, model_name, n_perm):
         if not os.path.isdir(save_dir):
             os.mkdir(save_dir)
         save_name = f'param_hdi_{param}.png'
-        fig.savefig(save_dir+save_name)
+        fig.savefig(save_dir+save_name, bbox_inches='tight',pad_inches=0)
 
 if __name__ == "__main__":
     # arg
@@ -281,5 +281,5 @@ if __name__ == "__main__":
         print('model must be bandit or generalise.')
     n_perm = 1000
     # comp_hdi_mean(model_name, param_ls, sort=False, draw_idx=30, draws=n_perm)
-    # plot_violin_params(f'./figs/{model_name}/params.csv', model_name, n_perm=n_perm)
+    plot_violin_params(f'./figs/{model_name}/params.csv', model_name, n_perm=n_perm)
     plot_hdi_permutations(f'./figs/{model_name}/params.csv', model_name, n_perm)
