@@ -243,7 +243,7 @@ def plot_hdi_permutations(csv_params, model_name, n_perm):
     df = pd.read_csv(csv_params)
     param_ls = np.unique(df['param'])
     for param in param_ls:
-        fig, ax = plt.subplots(figsize=(6,4))
+        fig, ax = plt.subplots(figsize=(6,5))
         df_tmp = df[(df['param']==param) & (df['group']=='control')]
         df_tmp_sort = df_tmp.sort_values(by=['hdi_high'],ascending=True)
         fill_indicator = sum(df_tmp_sort['hdi_high']>0)<sum(df_tmp_sort['hdi_high']<=0)
@@ -281,5 +281,5 @@ if __name__ == "__main__":
         print('model must be bandit or generalise.')
     n_perm = 1000
     # comp_hdi_mean(model_name, param_ls, sort=False, draw_idx=30, draws=n_perm)
-    plot_violin_params(f'./figs/{model_name}/params.csv', model_name, n_perm=n_perm)
+    # plot_violin_params(f'./figs/{model_name}/params.csv', model_name, n_perm=n_perm)
     plot_hdi_permutations(f'./figs/{model_name}/params.csv', model_name, n_perm)
