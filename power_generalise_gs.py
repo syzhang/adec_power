@@ -142,7 +142,7 @@ if __name__ == "__main__":
     # parameters AMT dataset (highest 10% approx patient params, low 40% approx as control params)
     # params made up
     param_dict_hc = {
-        'sigma_a': 0.60,  # generalisation param for shock
+        'sigma_a': 0.50,  # generalisation param for shock
         'sigma_n': 0.06,  # generalisation param for no shock
         'eta':    0.17,     # p_h dynamic learning rate
         'kappa':  0.75,    # p_h dynamic learning rate
@@ -155,25 +155,25 @@ if __name__ == "__main__":
         'sigma_n': 0.01,  # generalisation param for no shock
         'eta':    0.1,     # p_h dynamic learning rate
         'kappa':  0.2,    # p_h dynamic learning rate
-        'beta': 3,       # softmax beta
+        'beta': 2,       # softmax beta
         'bias': 0.1      # softmax bias
     }
     # patient params
     param_dict_pt = {
-        'sigma_a': 0.8,  # generalisation param for shock
+        'sigma_a': 0.85,  # generalisation param for shock
         'sigma_n': 0.03,  # generalisation param for no shock
         'eta':    0.18,     # p_h dynamic learning rate
         'kappa':  0.76,    # p_h dynamic learning rate
-        'beta': 5.3,       # softmax beta
+        'beta': 4.3,       # softmax beta
         'bias': 0.3      # softmax bias
     }
     # patient sd
     sd_dict_pt = {
-        'sigma_a': 0.1,  # generalisation param for shock
+        'sigma_a': 0.05,  # generalisation param for shock
         'sigma_n': 0.01,  # generalisation param for no shock
         'eta':    0.10,     # p_h dynamic learning rate
         'kappa':  0.2,    # p_h dynamic learning rate
-        'beta': 3,       # softmax beta
+        'beta': 2,       # softmax beta
         'bias': 0.1      # softmax bias
     }
 

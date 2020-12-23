@@ -125,10 +125,16 @@ def hdi_stats(key, hdi_bounds):
     # print(hdi_bounds)
     dfb = pd.DataFrame(hdi_bounds)
     dfb.columns = ['lower', 'upper']
-    significant_sim = 0
-    for idx,row in dfb.iterrows():
-        if np.sign(row['lower']) == np.sign(row['upper']):
-            significant_sim += 1
+    significant_sim, significant_neg, significant_pos = 0, 0, 0
+    for _,row in dfb.iterrows():
+        if np.sign(row['lower']) == np.sign(row['upper']) and row['lower']<0:
+            significant_neg += 1
+        elif np.sign(row['lower']) == np.sign(row['upper']) and row['lower']>=0:
+            significant_pos += 1
+    if significant_neg > significant_pos:
+        significant_sim = significant_neg
+    else:
+        significant_sim = significant_pos
     significant_pc = significant_sim/dfb.shape[0]*100.
     print(f'{key} significant %: {significant_pc:.2f}')
     return significant_pc
@@ -206,7 +212,7 @@ def plot_hdi_diff(model_name, param_key, diff_dict, sort, credible_interval=0.94
     fig = ax.get_figure()
     fig.savefig(save_dir+save_name)
 
-def plot_violin_params(csv_params):
+def plot_violin_params(csv_params, model_name, n_perm):
     """plot violin of param means"""
     import seaborn as sns
     sns.set_theme(style="whitegrid")
@@ -220,7 +226,8 @@ def plot_violin_params(csv_params):
         if n>0:
             ax[n].get_legend().remove()
             g.set(ylabel=None)
-            g.set(xlabel=None)
+        g.set(xlabel=None)
+    plt.suptitle(f'Fitted model parameter mean distribution from simulated data \n ({model_name} task, {n_perm} permutations)')
     # save fig
     save_dir = './figs/'+model_name+'/'
     if not os.path.isdir(save_dir):
@@ -228,18 +235,51 @@ def plot_violin_params(csv_params):
     save_name = 'param_mean.png'
     fig.savefig(save_dir+save_name)
 
+def plot_hdi_permutations(csv_params, model_name, n_perm):
+    """plot hdi for all permutations"""
+    import seaborn as sns
+    sns.set_theme(style="whitegrid")
+    df = pd.read_csv(csv_params)
+    param_ls = np.unique(df['param'])
+    for param in param_ls:
+        fig, ax = plt.subplots(figsize=(9,6))
+        df_tmp = df[(df['param']==param) & (df['group']=='control')]
+        df_tmp_sort = df_tmp.sort_values(by=['hdi_high'],ascending=True)
+        fill_indicator = sum(df_tmp_sort['hdi_high']>0)<sum(df_tmp_sort['hdi_high']<=0)
+        cnt = 0
+        fill_range = []
+        for _, row in df_tmp_sort.iterrows():
+            plt.vlines(x = cnt, ymin = row['hdi_low'], ymax = row['hdi_high'], colors = 'black', label = 'HDI', linewidth=0.5)
+            if fill_indicator: # <0 majority
+                if row['hdi_high']>=0:
+                    fill_range.append(cnt)
+            else:
+                if row['hdi_high']<0:
+                    fill_range.append(cnt)
+            cnt += 1
+        plt.fill_between(fill_range, min(df_tmp_sort['hdi_low']), max(df_tmp_sort['hdi_high']), facecolor='gray', alpha=0.5) 
+
+        plt.xlabel(param)
+        plt.ylabel('95% HDI')
+        plt.suptitle(f'Parameter HDI from simulated data \n ({model_name} task, each line represents one permutation)')
+        # save fig
+        save_dir = './figs/'+model_name+'/'
+        if not os.path.isdir(save_dir):
+            os.mkdir(save_dir)
+        save_name = f'param_hdi_{param}.png'
+        fig.savefig(save_dir+save_name)
+
 if __name__ == "__main__":
     # arg
     model_name = sys.argv[1] # which model sims to compare
 
     if model_name == 'bandit':
-        # output_dir = './tmp_output/bandit_sim/'
         param_ls = ['mu_Arew', 'mu_Apun', 'mu_R', 'mu_P', 'mu_xi']
     elif model_name == 'generalise':
-        # output_dir = './tmp_output/generalise_sim/'
         param_ls = ['mu_sigma_a', 'mu_sigma_n', 'mu_eta', 'mu_kappa', 'mu_beta', 'mu_bias']
     else:
         print('model must be bandit or generalise.')
-    # comp_hdi(model_name, param_ls, sort=False, draw_idx=51, draws=1000)
-    comp_hdi_mean(model_name, param_ls, sort=False, draw_idx=51, draws=1000)
-    plot_violin_params(f'./figs/{model_name}/params.csv')
+    n_perm = 1000
+    # comp_hdi_mean(model_name, param_ls, sort=False, draw_idx=30, draws=n_perm)
+    # plot_violin_params(f'./figs/{model_name}/params.csv', model_name, n_perm=n_perm)
+    plot_hdi_permutations(f'./figs/{model_name}/params.csv', model_name, n_perm)
