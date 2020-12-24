@@ -229,9 +229,9 @@ def plot_violin_params(csv_params, model_name, n_perm):
         g.set(xlabel=None)
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     if model_name == 'bandit':
-        plt.suptitle(f'Fitted model parameter mean distribution from simulated data \n ({model_name} task, lapse model)')
+        plt.suptitle(f'Simulated data fitted model parameter mean distribution \n ({model_name} task, reward+punishment lapse model)')
     else:
-        plt.suptitle(f'Fitted model parameter mean distribution from simulated data \n ({model_name} task, perceptual+value generalisation model)')
+        plt.suptitle(f'Simulated data fitted model parameter mean distribution \n ({model_name} task, perceptual+value generalisation model)')
     # save fig
     save_dir = './figs/'+model_name+'/'
     if not os.path.isdir(save_dir):
@@ -263,8 +263,8 @@ def plot_hdi_permutations(csv_params, model_name, n_perm):
             cnt += 1
         plt.fill_between(fill_range, min(df_tmp_sort['hdi_low']), max(df_tmp_sort['hdi_high']), facecolor='gray', alpha=0.5) 
         plt.xlabel(param)
-        plt.ylabel('95% HDI')
-        plt.suptitle(f'Parameter HDI from simulated data \n ({model_name} task, each line represents one permutation)')
+        plt.ylabel('Control>Patient 95% HDI')
+        plt.suptitle(f'Control>Patient 95% HDI for parameter estimation \n ({model_name} task, each line represents 1 simulation)')
         # save fig
         save_dir = './figs/'+model_name+'/'
         if not os.path.isdir(save_dir):
@@ -283,6 +283,6 @@ if __name__ == "__main__":
     else:
         print('model must be bandit or generalise.')
     n_perm = 1000
-    # comp_hdi_mean(model_name, param_ls, sort=False, draw_idx=30, draws=n_perm)
+    comp_hdi_mean(model_name, param_ls, sort=False, draw_idx=30, draws=n_perm)
     plot_violin_params(f'./figs/{model_name}/params.csv', model_name, n_perm=n_perm)
-    # plot_hdi_permutations(f'./figs/{model_name}/params.csv', model_name, n_perm)
+    plot_hdi_permutations(f'./figs/{model_name}/params.csv', model_name, n_perm)
