@@ -6,8 +6,10 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import pystan
+import pickle
 
-def sim_motoradapt_single(param_dict, sd_dict, group_name, seed, num_sj=50, num_trial=200, model_name='motoradapt_single', plot=False):
+def sim_motoradapt_single(param_dict, sd_dict, group_name, seed, num_sj=50, num_trial=200, model_name='motoradapt_single', plot=False, plot_raw=False):
     """simulate with state space model for multiple subjects"""
     multi_subject = []
     
@@ -24,7 +26,7 @@ def sim_motoradapt_single(param_dict, sd_dict, group_name, seed, num_sj=50, num_
     df_out = pd.concat(multi_subject)
     # plot check
     if plot:
-        plot_state(df_out)
+        plot_state(df_out, plot_raw)
     # saving output
     output_dir = './tmp_output/motoradapt_sim/'
     if not os.path.isdir(output_dir):
@@ -39,7 +41,8 @@ def sigmoid(x):
 def model_motoradapt_single(param_dict, subjID, num_trial=200):
     """state space model, single process model"""
     # rotation schedule (50 baseline trials, then rotation trials, 50 washout trials)
-    rotation = np.concatenate([np.zeros(50), 45*np.ones(num_trial-100), np.zeros(50)])
+    n_baseline = 3
+    rotation = np.concatenate([np.zeros(n_baseline), 15*np.ones(num_trial-n_baseline)])
     # rotation = np.concatenate([np.zeros(50), np.arange(0.,45.,45./50), 45.*np.ones(num_trial-150), np.zeros(50)])
 
     # initialise
@@ -54,26 +57,65 @@ def model_motoradapt_single(param_dict, subjID, num_trial=200):
     for t in range(num_trial):
         # trial error, error = current state - perturbation
         sim_error = state_single - rotation[t]
-        # output (add noise)
-        single_state_rand = state_single + np.random.rand(1)[0]*10e-1
-        data_out.append([subjID, t, single_state_rand, sim_error])
         # update, retained state - learning rate * error
         state_single = A_retention*state_single - B_learning*sim_error
+        # output (add noise)
+        single_state_rand = state_single + np.random.rand(1)[0]
+        data_out.append([subjID, t, rotation[t], single_state_rand])
 
     df_out = pd.DataFrame(data_out)
-    df_out.columns = ['subjID', 'trial', 'state', 'error']
+    df_out.columns = ['subjID', 'trial', 'rotation', 'state']
 
     return df_out
 
-def plot_state(df_out):
+def motoradapt_preprocess_func(txt_path):
+    """parse simulated data for pystan"""
+    # Iterate through grouped_data
+    subj_group = pd.read_csv(txt_path, sep='\t')
+
+    # Use general_info(s) about raw_data
+    subj_ls = np.unique(subj_group['subjID'])
+    n_subj = len(subj_ls)
+    t_subjs = np.array([subj_group[subj_group['subjID']==x].shape[0] for x in subj_ls])
+    t_max = max(t_subjs)
+
+    # Initialize (model-specific) data arrays
+    rotation = np.full((n_subj, t_max), -1, dtype=int)
+    state = np.full((n_subj, t_max), 0, dtype=float)
+
+    # Write from subj_data to the data arrays
+    for s in range(n_subj):
+        subj_data = subj_group[subj_group['subjID']==s]
+        t = t_subjs[s]
+        rotation[s][:t] = subj_data['rotation']
+        state[s][:t] = subj_data['state']
+
+    # Wrap into a dict for pystan
+    data_dict = {
+        'N': n_subj,
+        'T': t_max,
+        'Tsubj': t_subjs,
+        'rotation': rotation,
+        'state': state,
+    }
+    # print(data_dict)
+    # Returned data_dict will directly be passed to pystan
+    return data_dict
+
+def plot_state(df_out, plot_raw=False):
     """plot state from model"""
-    # df = df_out[df_out['subjID']==0]
-    df = df_out
     fig = plt.subplots(figsize=(6,5))
-    # plt.plot(df['state'], label='State')
-    sns.lineplot(x='trial', y='state', data=df)
-    plt.vlines(50, -10, 60, colors='black', linestyles='--')
-    plt.vlines(max(df['trial'])-50, -10, 60, colors='black', linestyles='--')
+    if plot_raw:
+        for n in range(10):
+            df = df_out[df_out['subjID']==n]
+            plt.plot(df['state'], label='State')
+    else:
+        df = df_out
+        sns.lineplot(x='trial', y='state', data=df)
+    # plt.vlines(50, -10, 60, colors='black', linestyles='--')
+    # plt.vlines(max(df['trial'])-50, -10, 60, colors='black', linestyles='--')
+    df0 = df[df['subjID']==0]
+    plt.plot(df0['rotation'], color='black')
     plt.hlines(0, 0, max(df['trial']), colors='black')
     plt.legend()
     plt.xlabel('Trial')
@@ -113,9 +155,27 @@ if __name__ == "__main__":
     model_name = 'motoradapt_single'
     if group_name == 'hc':
         # simulate hc subjects with given params
-        sim_motoradapt_single(param_dict_hc, sd_dict_hc, group_name, seed=seed_num,num_sj=subj_num, num_trial=trial_num, model_name=model_name, plot=True)
+        sim_motoradapt_single(param_dict_hc, sd_dict_hc, group_name, seed=seed_num,num_sj=subj_num, num_trial=trial_num, model_name=model_name, plot=False, plot_raw=False)
     elif group_name == 'pt':
         # simulate pt subjects with given params
         sim_motoradapt_single(param_dict_pt, sd_dict_pt, group_name, seed=seed_num, num_sj=subj_num, num_trial=trial_num, model_name=model_name)
     else:
         print('check group name (hc or pt)')
+
+    # parse simulated data
+    txt_path = f'./tmp_output/motoradapt_sim/motoradapt_single_{group_name}_{seed_num}.txt'
+    data_dict = motoradapt_preprocess_func(txt_path)
+
+    # fit stan model
+    sm = pystan.StanModel(file='motoradapt_single.stan')
+    fit = sm.sampling(data=data_dict, iter=2000, chains=1)
+    print(fit)
+
+    # saving
+    pars = ['mu_A', 'mu_B', 'mu_sig']
+    extracted = fit.extract(pars=pars, permuted=True)
+    # print(extracted)
+    sfile = f'./tmp_output/motoradapt_sim/{group_name}_sim_{seed_num}.pkl'
+    with open(sfile, 'wb') as op:
+        tmp = { k: v for k, v in extracted.items() if k in pars } # dict comprehension
+        pickle.dump(tmp, op)
