@@ -22,3 +22,11 @@ echo "submitted job simulation with seed $sim_num "
 fsl_sub -T 300 -R 64 python power_generalise_gs.py pt $sim_num 90 300
 fsl_sub -T 300 -R 64 python power_generalise_gs.py hc $sim_num 90 300
 done
+
+# run sims for motor adapt
+for sim_num in {0..50}
+do
+echo "submitted job simulation with seed $sim_num "
+fsl_sub -T 10 -R 64 python power_motoradapt_single.py hc $sim_num 90 15
+fsl_sub -T 10 -R 64 python power_motoradapt_single.py pt $sim_num 90 15
+done

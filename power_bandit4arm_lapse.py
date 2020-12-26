@@ -34,8 +34,8 @@ def sim_bandit4arm_lapse(param_dict, sd_dict, group_name, seed, num_sj=50, num_t
 def model_bandit4arm_lapse(param_dict, subjID, num_trial=200):
     """simulate 4-arm bandit choices and outcomes"""
     # load reward/pain probabilities
-    pun_prob = pd.read_csv('./pain_prob.csv').values
-    rew_prob = pd.read_csv('./reward_prob.csv').values
+    pun_prob = pd.read_csv('./probs/pain_prob.csv').values
+    rew_prob = pd.read_csv('./probs/reward_prob.csv').values
     
     # initialise values
     Qr = np.zeros(4)

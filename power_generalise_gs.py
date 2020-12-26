@@ -42,7 +42,7 @@ def draw_cue(num_trial):
 def model_generalise_gs(param_dict, subjID, num_trial=190):
     """simulate shapes, avoid actions, and shock outcomes"""
     # load predefined image sequences (38 trials x 5 blocks)
-    # trial_type = np.squeeze(pd.read_csv('./generalise_stim.csv').values) # 1:7
+    # trial_type = np.squeeze(pd.read_csv('./probs/generalise_stim.csv').values) # 1:7
     trial_type = draw_cue(num_trial)
     num_state = len(np.unique(trial_type))
 

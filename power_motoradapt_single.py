@@ -51,6 +51,7 @@ def model_motoradapt_single(param_dict, subjID, num_trial=200):
     # transform params
     A_retention = sigmoid(param_dict['A_retention'])
     B_learning = sigmoid(param_dict['B_learning'])
+    norm_sig = np.exp(param_dict['norm_sig'])
     # initialise output
     data_out = []
     # simulate trials
@@ -60,7 +61,7 @@ def model_motoradapt_single(param_dict, subjID, num_trial=200):
         # update, retained state - learning rate * error
         state_single = A_retention*state_single - B_learning*sim_error
         # output (add noise)
-        single_state_rand = state_single + np.random.rand(1)[0]
+        single_state_rand = np.random.normal(state_single, norm_sig)
         data_out.append([subjID, t, rotation[t], single_state_rand])
 
     df_out = pd.DataFrame(data_out)
@@ -126,23 +127,27 @@ def plot_state(df_out, plot_raw=False):
 if __name__ == "__main__":
     # healthy control parameters (made up based on Takiyama 2016)
     param_dict_hc = {
-        'A_retention': 2.3,  # retention rate 0.910
-        'B_learning': -0.6  # learning rate 0.344
+        'A_retention': 2.7,  # retention rate 0.92
+        'B_learning': -1.3,  # learning rate 0.33
+        'norm_sig': .6 # sd of individual trajectory 1.65
     }
     # patient parameters (made up based on Takiyama 2016)
     param_dict_pt = {
-        'A_retention': 2.5,  # retention rate 0.93
-        'B_learning': -0.3  # learning rate 0.405
+        'A_retention': 1.1,  # retention rate 0.81
+        'B_learning': -0.1,  # learning rate 0.47
+        'norm_sig': .9 # sd of individual trajectory 1
     }
     # healthy control sd
     sd_dict_hc = {
-        'A_retention': 5,  # retention rate
-        'B_learning': 2  # learning rate
+        'A_retention': 0.8,  # retention rate
+        'B_learning': 0.6,  # learning rate
+        'norm_sig': 1.8 # sd of individual trajectory 
     }
     # patient sd
     sd_dict_pt = {
-        'A_retention': 5,  # retention rate
-        'B_learning': 2  # learning rate
+        'A_retention': 0.8,  # retention rate
+        'B_learning': 0.5,  # learning rate
+        'norm_sig': 1.6 # sd of individual trajectory 
     }
     
     # parsing cl arguments
@@ -168,7 +173,7 @@ if __name__ == "__main__":
 
     # fit stan model
     sm = pystan.StanModel(file='motoradapt_single.stan')
-    fit = sm.sampling(data=data_dict, iter=2000, chains=1)
+    fit = sm.sampling(data=data_dict, iter=2000, chains=4)
     print(fit)
 
     # saving

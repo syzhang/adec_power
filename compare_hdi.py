@@ -50,10 +50,13 @@ def comp_hdi_mean(model_name, param_ls, sort=True, draw_idx=50, draws=1000, seed
         # percentage of significant draws (ie bounds doesn't encompass 0)
         significant_pc = hdi_stats(key, bounds)
         significant_df.append(significant_pc)
-
+    
     # save significant calculation
     df_sig = pd.DataFrame({'parameter': param_ls,
                         'significant_percent': significant_df},index=None)
+    save_dir = './figs/'+model_name+'/'
+    if not os.path.isdir(save_dir):
+        os.mkdir(save_dir)
     df_sig.to_csv('./figs/'+model_name+'/significance_pc.csv')
     # save df_out
     out = pd.concat(df_out)
@@ -230,8 +233,10 @@ def plot_violin_params(csv_params, model_name, n_perm):
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     if model_name == 'bandit':
         plt.suptitle(f'Simulated data fitted model parameter mean distribution \n ({model_name} task, reward+punishment lapse model)')
-    else:
+    elif model_name == 'generalise':
         plt.suptitle(f'Simulated data fitted model parameter mean distribution \n ({model_name} task, perceptual+value generalisation model)')
+    elif model_name == 'motoradapt':
+        plt.suptitle(f'Simulated data fitted model parameter mean distribution \n (moto adaptation task, single state space model)')
     # save fig
     save_dir = './figs/'+model_name+'/'
     if not os.path.isdir(save_dir):
@@ -280,6 +285,8 @@ if __name__ == "__main__":
         param_ls = ['mu_Arew', 'mu_Apun', 'mu_R', 'mu_P', 'mu_xi']
     elif model_name == 'generalise':
         param_ls = ['mu_sigma_a', 'mu_sigma_n', 'mu_eta', 'mu_kappa', 'mu_beta', 'mu_bias']
+    elif model_name == 'motoradapt':
+        param_ls = ['mu_A', 'mu_B', 'mu_sig']
     else:
         print('model must be bandit or generalise.')
     n_perm = 1000
