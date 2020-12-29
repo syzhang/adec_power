@@ -220,23 +220,33 @@ def plot_violin_params(csv_params, model_name, n_perm):
     import seaborn as sns
     sns.set_theme(style="whitegrid")
     df = pd.read_csv(csv_params)
-    param_ls = np.unique(df['param'])
+    df['parameter'] = df['param'].str.slice(3,)
+    param_ls = np.unique(df['parameter'])
     n_param = len(param_ls)
-    fig, ax = plt.subplots(1,n_param,figsize=(7,5))
+    if model_name=='motoradapt':
+        fig, ax = plt.subplots(1,n_param,figsize=(3,3.5))
+        leg_box = (-1,-0.1)
+    else:  
+        fig, ax = plt.subplots(1,n_param,figsize=(5,3.5))
+        leg_box = (-2, -0.1)
     for n in range(n_param):
-        g= sns.violinplot(data=df[df['param']==param_ls[n]], x="param", y="param_mean", hue="group", split=True, inner="quart", linewidth=1,palette={"patient": "b", "control": ".85"}, ax=ax[n])
+        g= sns.violinplot(data=df[df['parameter']==param_ls[n]], x="parameter", y="param_mean", hue="group", split=True, inner="quart", linewidth=1,palette={"patient": "b", "control": ".85"}, ax=ax[n])
         sns.despine(left=True)
-        if n>0:
-            g.set(ylabel=None)
+        g.set(ylabel=None)
         ax[n].get_legend().remove()
+        ax[n].tick_params(axis='y', labelsize=8) 
+        if model_name=='motoradapt' and n==2:
+            g.set(yticklabels=[])
         g.set(xlabel=None)
-    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-    if model_name == 'bandit':
-        plt.suptitle(f'Simulated data fitted model parameter mean distribution \n ({model_name} task, reward+punishment lapse model)')
-    elif model_name == 'generalise':
-        plt.suptitle(f'Simulated data fitted model parameter mean distribution \n ({model_name} task, perceptual+value generalisation model)')
-    elif model_name == 'motoradapt':
-        plt.suptitle(f'Simulated data fitted model parameter mean distribution \n (moto adaptation task, single state space model)')
+    # plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    plt.legend(loc='upper center', bbox_to_anchor=leg_box,
+          fancybox=True, shadow=True, ncol=2)
+    # if model_name == 'bandit':
+    #     # plt.suptitle(f'Simulated data fitted model parameter mean distribution \n ({model_name} task, reward+punishment lapse model)')
+    # elif model_name == 'generalise':
+    #     # plt.suptitle(f'Simulated data fitted model parameter mean distribution \n ({model_name} task, perceptual+value generalisation model)')
+    # elif model_name == 'motoradapt':
+    #     # plt.suptitle(f'Simulated data fitted model parameter mean distribution \n (moto adaptation task, single state space model)')
     # save fig
     save_dir = './figs/'+model_name+'/'
     if not os.path.isdir(save_dir):
@@ -251,7 +261,7 @@ def plot_hdi_permutations(csv_params, model_name, n_perm):
     df = pd.read_csv(csv_params)
     param_ls = np.unique(df['param'])
     for param in param_ls:
-        fig, ax = plt.subplots(figsize=(6,5))
+        fig, ax = plt.subplots(figsize=(5,4))
         df_tmp = df[(df['param']==param) & (df['group']=='control')]
         df_tmp_sort = df_tmp.sort_values(by=['hdi_high'],ascending=True)
         fill_indicator = sum(df_tmp_sort['hdi_high']>0)<sum(df_tmp_sort['hdi_high']<=0)
@@ -290,6 +300,6 @@ if __name__ == "__main__":
     else:
         print('model must be bandit or generalise.')
     n_perm = 1000
-    comp_hdi_mean(model_name, param_ls, sort=False, draw_idx=30, draws=n_perm)
+    # comp_hdi_mean(model_name, param_ls, sort=False, draw_idx=30, draws=n_perm)
     plot_violin_params(f'./figs/{model_name}/params.csv', model_name, n_perm=n_perm)
-    plot_hdi_permutations(f'./figs/{model_name}/params.csv', model_name, n_perm)
+    # plot_hdi_permutations(f'./figs/{model_name}/params.csv', model_name, n_perm)
