@@ -264,7 +264,8 @@ def plot_hdi_permutations(csv_params, model_name, n_perm):
     df = pd.read_csv(csv_params)
     param_ls = np.unique(df['param'])
     for param in param_ls:
-        fig, ax = plt.subplots(figsize=(5,4))
+        # fig, ax = plt.subplots(figsize=(5,4))
+        fig, ax = plt.subplots(figsize=(3,2.5))
         df_tmp = df[(df['param']==param) & (df['group']=='control')]
         df_tmp_sort = df_tmp.sort_values(by=['hdi_high'],ascending=True)
         fill_indicator = sum(df_tmp_sort['hdi_high']>0)<sum(df_tmp_sort['hdi_high']<=0)
@@ -280,9 +281,12 @@ def plot_hdi_permutations(csv_params, model_name, n_perm):
                     fill_range.append(cnt)
             cnt += 1
         plt.fill_between(fill_range, min(df_tmp_sort['hdi_low']), max(df_tmp_sort['hdi_high']), facecolor='gray', alpha=0.5) 
-        plt.xlabel(param)
-        plt.ylabel('Control>Patient 95% HDI')
-        plt.suptitle(f'Control>Patient 95% HDI for parameter estimation \n ({model_name} task, each line represents 1 simulation)')
+        plt.xlabel(param[3:], fontsize=10)
+        plt.ylabel('Control>Patient 95% HDI', fontsize=10)
+        plt.yticks(fontsize=8)
+        plt.xticks(fontsize=8) 
+        # plt.suptitle(f'Control>Patient 95% HDI for parameter estimation \n ({model_name} task, each line represents 1 simulation)')
+        plt.title(f'Parameter 95% HDI ({model_name} task)', fontsize=10)
         # save fig
         save_dir = './figs/'+model_name+'/'
         if not os.path.isdir(save_dir):
@@ -304,5 +308,5 @@ if __name__ == "__main__":
         print('model must be bandit or generalise.')
     n_perm = 1000
     # comp_hdi_mean(model_name, param_ls, sort=False, draw_idx=30, draws=n_perm)
-    plot_violin_params(f'./figs/{model_name}/params.csv', model_name, n_perm=n_perm)
-    # plot_hdi_permutations(f'./figs/{model_name}/params.csv', model_name, n_perm)
+    # plot_violin_params(f'./figs/{model_name}/params.csv', model_name, n_perm=n_perm)
+    plot_hdi_permutations(f'./figs/{model_name}/params.csv', model_name, n_perm)
