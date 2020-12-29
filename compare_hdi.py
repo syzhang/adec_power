@@ -224,10 +224,13 @@ def plot_violin_params(csv_params, model_name, n_perm):
     param_ls = np.unique(df['parameter'])
     n_param = len(param_ls)
     if model_name=='motoradapt':
-        fig, ax = plt.subplots(1,n_param,figsize=(3,3.5))
+        fig, ax = plt.subplots(1,n_param,figsize=(2,2.5))
         leg_box = (-1,-0.1)
+    elif model_name=='generalise':
+        fig, ax = plt.subplots(1,n_param,figsize=(4.5,2.5))
+        leg_box = (-2,-0.1)
     else:  
-        fig, ax = plt.subplots(1,n_param,figsize=(5,3.5))
+        fig, ax = plt.subplots(1,n_param,figsize=(4,2.5))
         leg_box = (-2, -0.1)
     for n in range(n_param):
         g= sns.violinplot(data=df[df['parameter']==param_ls[n]], x="parameter", y="param_mean", hue="group", split=True, inner="quart", linewidth=1,palette={"patient": "b", "control": ".85"}, ax=ax[n])
