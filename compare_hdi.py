@@ -300,6 +300,8 @@ if __name__ == "__main__":
 
     if model_name == 'bandit':
         param_ls = ['mu_Arew', 'mu_Apun', 'mu_R', 'mu_P', 'mu_xi']
+    elif model_name == 'bandit_combined':
+        param_ls = ['mu_Arew', 'mu_Apun', 'mu_R', 'mu_P', 'mu_xi', 'mu_d']
     elif model_name == 'generalise':
         param_ls = ['mu_sigma_a', 'mu_sigma_n', 'mu_eta', 'mu_kappa', 'mu_beta', 'mu_bias']
     elif model_name == 'motoradapt':
@@ -308,5 +310,5 @@ if __name__ == "__main__":
         print('model must be bandit or generalise.')
     n_perm = 1000
     # comp_hdi_mean(model_name, param_ls, sort=False, draw_idx=30, draws=n_perm)
-    # plot_violin_params(f'./figs/{model_name}/params.csv', model_name, n_perm=n_perm)
-    plot_hdi_permutations(f'./figs/{model_name}/params.csv', model_name, n_perm)
+    plot_violin_params(f'./figs/{model_name}/params.csv', model_name, n_perm=n_perm)
+    # plot_hdi_permutations(f'./figs/{model_name}/params.csv', model_name, n_perm)

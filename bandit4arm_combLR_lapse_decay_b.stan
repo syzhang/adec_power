@@ -1,5 +1,4 @@
-#include /pre/license.stan
-
+// combined learning rate lapse decay model (fapia)
 data {
   int<lower=1> N;
   int<lower=1> T;

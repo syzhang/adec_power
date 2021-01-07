@@ -194,7 +194,7 @@ if __name__ == "__main__":
 
     # fit stan model
     sm = pystan.StanModel(file='bandit4arm_combLR_lapse_decay_b.stan')
-    fit = sm.sampling(data=data_dict, iter=2000, chains=4)
+    fit = sm.sampling(data=data_dict, iter=2000, chains=1)
     print(fit)
 
     # saving
@@ -205,19 +205,5 @@ if __name__ == "__main__":
     with open(sfile, 'wb') as op:
         tmp = { k: v for k, v in extracted.items() if k in pars } # dict comprehension
         pickle.dump(tmp, op)
-
-
-    # # fit
-    # # Run the model and store results in "output"
-    # output = bandit4arm_lapse('./tmp_output/bandit_combined_sim/'+model_name+'_'+group_name+'_'+str(seed_num)+'.txt', niter=3000, nwarmup=1500, nchain=4, ncore=16)
-    
-    # # debug
-    # print(output.fit)
-
-    # # saving
-    # sfile = './tmp_output/bandit_combined_sim/'+group_name+'_sim_'+str(seed_num)+'.pkl'
-    # with open(sfile, 'wb') as op:
-    #     tmp = { k: v for k, v in output.par_vals.items() if k in ['mu_Arew', 'mu_Apun', 'mu_R', 'mu_P', 'mu_xi'] } # dict comprehension
-    #     pickle.dump(tmp, op)
 
 
