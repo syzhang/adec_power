@@ -5,7 +5,8 @@ import sys, os
 import pickle
 import numpy as np
 import pandas as pd
-from hbayesdm.models import generalise_gs
+import pystan
+# from hbayesdm.models import generalise_gs
 # from hbayesdm import rhat, print_fit, plot_hdi, hdi
 
 def sigmoid(p):
@@ -138,11 +139,48 @@ def sim_generalise_gs(param_dict, sd_dict, group_name, seed,
     df_out.to_csv(output_dir+f_name+'.txt', sep='\t', index=False)
     print(df_out)
 
+def generalise_gs_preprocess_func(txt_path):
+    """parse simulated data for pystan"""
+    # Iterate through grouped_data
+    subj_group = pd.read_csv(txt_path, sep='\t')
+
+    # Use general_info(s) about raw_data
+    subj_ls = np.unique(subj_group['subjID'])
+    n_subj = len(subj_ls)
+    t_subjs = np.array([subj_group[subj_group['subjID']==x].shape[0] for x in subj_ls])
+    t_max = max(t_subjs)
+
+    # Initialize (model-specific) data arrays
+    cue = np.full((n_subj, t_max), 0, dtype=int)
+    choice = np.full((n_subj, t_max), -1, dtype=int)
+    outcome = np.full((n_subj, t_max), -1, dtype=float)
+
+    # Write from subj_data to the data arrays
+    for s in range(n_subj):
+        subj_data = subj_group[subj_group['subjID']==s]
+        t = t_subjs[s]
+        cue[s][:t] = subj_data['cue']
+        choice[s][:t] = subj_data['choice']
+        outcome[s][:t] = -1 * np.abs(subj_data['outcome'])  # Use abs
+
+    # Wrap into a dict for pystan
+    data_dict = {
+        'N': n_subj,
+        'T': t_max,
+        'Tsubj': t_subjs,
+        'cue': cue,
+        'choice': choice,
+        'outcome': outcome,
+    }
+    # print(data_dict)
+    # Returned data_dict will directly be passed to pystan
+    return data_dict
+
 if __name__ == "__main__":
     # parameters AMT dataset (highest 10% approx patient params, low 40% approx as control params)
     # params made up
     param_dict_hc = {
-        'sigma_a': 0.50,  # generalisation param for shock
+        'sigma_a': 0.45,  # generalisation param for shock
         'sigma_n': 0.06,  # generalisation param for no shock
         'eta':    0.17,     # p_h dynamic learning rate
         'kappa':  0.75,    # p_h dynamic learning rate
@@ -151,7 +189,7 @@ if __name__ == "__main__":
     }
     # hc sd
     sd_dict_hc = {
-        'sigma_a': 0.1,  # generalisation param for shock
+        'sigma_a': 0.05,  # generalisation param for shock
         'sigma_n': 0.01,  # generalisation param for no shock
         'eta':    0.1,     # p_h dynamic learning rate
         'kappa':  0.2,    # p_h dynamic learning rate
@@ -193,15 +231,34 @@ if __name__ == "__main__":
     else:
         print('check group name (hc or pt)')
 
-    # fit
-    # Run the model and store results in "output"
-    output = generalise_gs('./tmp_output/generalise_sim/'+model_name+'_'+group_name+'_'+str(seed_num)+'.txt', niter=3000, nwarmup=1500, nchain=4, ncore=16)
+    # parse simulated data
+    txt_path = f'./tmp_output/generalise_sim/generalise_gs_{group_name}_{seed_num}.txt'
+    data_dict = generalise_gs_preprocess_func(txt_path)
 
-    # debug
-    print(output.fit)
+    # fit stan model
+    sm = pystan.StanModel(file='generalise_gs.stan')
+    fit = sm.sampling(data=data_dict, iter=3000, chains=2)
+    print(fit)
 
     # saving
-    sfile = './tmp_output/generalise_sim/'+group_name+'_sim_'+str(seed_num)+'.pkl'
+    pars = ['mu_sigma_a', 'mu_sigma_n', 'mu_eta', 'mu_kappa', 'mu_beta', 'mu_bias']
+    extracted = fit.extract(pars=pars, permuted=True)
+    # print(extracted)
+    sfile = f'./tmp_output/generalise_sim/{group_name}_sim_{seed_num}.pkl'
     with open(sfile, 'wb') as op:
-        tmp = { k: v for k, v in output.par_vals.items() if k in ['mu_sigma_a', 'mu_sigma_n', 'mu_eta', 'mu_kappa', 'mu_beta', 'mu_bias'] } # dict comprehension
+        tmp = { k: v for k, v in extracted.items() if k in pars } # dict comprehension
         pickle.dump(tmp, op)
+
+    # hbayesdm method
+    # # fit
+    # # Run the model and store results in "output"
+    # output = generalise_gs('./tmp_output/generalise_sim/'+model_name+'_'+group_name+'_'+str(seed_num)+'.txt', niter=3000, nwarmup=1500, nchain=4, ncore=16)
+
+    # # debug
+    # print(output.fit)
+
+    # # saving
+    # sfile = './tmp_output/generalise_sim/'+group_name+'_sim_'+str(seed_num)+'.pkl'
+    # with open(sfile, 'wb') as op:
+    #     tmp = { k: v for k, v in output.par_vals.items() if k in ['mu_sigma_a', 'mu_sigma_n', 'mu_eta', 'mu_kappa', 'mu_beta', 'mu_bias'] } # dict comprehension
+    #     pickle.dump(tmp, op)

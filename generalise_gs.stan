@@ -1,5 +1,3 @@
-#include /pre/license.stan
-
 // Norbury et al 2018 eLife, generalisation model with 2 gs and bias
 
 data {

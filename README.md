@@ -1,6 +1,6 @@
-# Data simulation and power analysis (ADEC)
+# Data simulation and power analysis (Pain NeuroEng)
 
-This repository is the code used for data simulation and power analysis for ADEC (ADPD consortium funding application).
+This repository is the code used for data simulation and power analysis for Pain NeuroEng (ADPD consortium funding application).
 
 ## Requirements
 
@@ -10,7 +10,7 @@ To install requirements:
 conda env create -f environment.yml
 ```
 
-Or install hBayesDM to get Stan:
+Or install [hBayesDM](https://hbayesdm.readthedocs.io/en/v1.0.1/) to get Stan and pyStan setup:
 
 ```
 pip install hbayesdm
@@ -21,17 +21,17 @@ pip install hbayesdm
 To simulate data and fit  for bandit task, run the main script:
 
 ```train
-python power_bandit4arm_lapse.py pt 0 90 300
+python power_bandit4arm_combined.py pt 0 70 300
 ```
 
 * pt - simulate patients (or use hc for controls). Change parameters inside main script.
 * seed number 0
-* simulate 90 participants
+* simulate 70 participants
 * each participant to complete 300 trials
 
-Run `power_generalise_gs.py` for generalisation task (need to install `generalise_gs.stan` to hBayesDM), or `power_motoradapt_single.py` for motor adaptation task. 
+Run `power_generalise_gs.py` for generalisation task, or `power_motoradapt_single.py` for motor adaptation task. 
 
-Please note Stan can take several hours to run for a large number of subjects/trials on a cluster.
+Please note Stan can take several hours to run for a large number of subjects/trials on a cluster. And evaluation requires at least simulation from at least 30 different random seeds (per task).
 
 ## Evaluation
 
