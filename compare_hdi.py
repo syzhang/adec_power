@@ -309,6 +309,6 @@ if __name__ == "__main__":
     else:
         print('model must be bandit or generalise.')
     n_perm = 1000
-    # comp_hdi_mean(model_name, param_ls, sort=False, draw_idx=30, draws=n_perm)
+    comp_hdi_mean(model_name, param_ls, sort=False, draw_idx=30, draws=n_perm)
     plot_violin_params(f'./figs/{model_name}/params.csv', model_name, n_perm=n_perm)
-    # plot_hdi_permutations(f'./figs/{model_name}/params.csv', model_name, n_perm)
+    plot_hdi_permutations(f'./figs/{model_name}/params.csv', model_name, n_perm)

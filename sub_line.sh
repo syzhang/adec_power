@@ -16,8 +16,8 @@ done
 for sim_num in {0..30}
 do
 echo "submitted job simulation with seed $sim_num "
-fsl_sub -T 120 -R 64 python power_bandit4arm_combined.py pt $sim_num 90 300
-fsl_sub -T 120 -R 64 python power_bandit4arm_combined.py hc $sim_num 90 300
+fsl_sub -T 120 -R 32 python power_bandit4arm_combined.py pt $sim_num 90 300
+fsl_sub -T 120 -R 32 python power_bandit4arm_combined.py hc $sim_num 90 300
 done
 # fsl_sub -T 300 -R 64 -s openmp,2 python power_bandit4arm_combined.py pt $sim_num 90 300
 

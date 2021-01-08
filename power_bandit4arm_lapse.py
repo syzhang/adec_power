@@ -95,8 +95,8 @@ def model_bandit4arm_lapse(param_dict, subjID, num_trial=200):
 if __name__ == "__main__":
     # healthy control parameters (based on FAPIA)
     param_dict_hc = {
-        'Arew': 0.519,  # reward learning rate
-        'Apun': 0.307,  # punishment learning rate
+        'Apun': 0.519,  # punishment learning rate
+        'Arew': 0.307,  # reward learning rate
         'R':    9.248,  # reward sensitivity
         'P':    8.643,  # punishment sensitivity
         'xi':   0.018   # lapse
@@ -104,8 +104,8 @@ if __name__ == "__main__":
 
     # assumed patient parameters 
     param_dict_pt = {
-        'Arew': 0.648,  # reward learning rate
-        'Apun': 0.337,  # punishment learning rate
+        'Apun': 0.648,  # punishment learning rate
+        'Arew': 0.337,  # reward learning rate
         'R':    10.583,  # reward sensitivity
         'P':    10.109,  # punishment sensitivity
         'xi':   0.071   # lapse
@@ -113,8 +113,8 @@ if __name__ == "__main__":
 
     # control sd
     sd_dict_hc= {
-        'Arew': 0.033,  # reward learning rate
-        'Apun': 0.030,  # punishment learning rate
+        'Arew': 0.030,  # reward learning rate
+        'Apun': 0.033,  # punishment learning rate
         'R':    0.941,  # reward sensitivity
         'P':    1.248,  # punishment sensitivity
         'xi':   0.006   # lapse
@@ -122,8 +122,8 @@ if __name__ == "__main__":
 
     # patient sd
     sd_dict_pt = {
-        'Arew': 0.056,  # reward learning rate
-        'Apun': 0.051,  # punishment learning rate
+        'Arew': 0.051,  # reward learning rate
+        'Apun': 0.056,  # punishment learning rate
         'R':    1.128,  # reward sensitivity
         'P':    1.129,  # punishment sensitivity
         'xi':   0.015   # lapse

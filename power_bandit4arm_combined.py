@@ -157,7 +157,7 @@ if __name__ == "__main__":
         'Arew': 0.178,  # reward learning rate
         'Apun': 0.018,  # punishment learning rate
         'R':    5.031,  # reward sensitivity
-        'P':    3.715,  # punishment sensitivity
+        'P':    1.715,  # punishment sensitivity
         'xi':   0.003,   # lapse
         'd':    0.261   # decay
     }
@@ -165,10 +165,10 @@ if __name__ == "__main__":
     # patient sd
     sd_dict_pt = {
         'Arew': 0.300,  # reward learning rate
-        'Apun': 0.100,  # punishment learning rate
+        'Apun': 0.010,  # punishment learning rate
         'R':    5.911,  # reward sensitivity
-        'P':    2.577,  # punishment sensitivity
-        'xi':   0.043,   # lapse
+        'P':    1.577,  # punishment sensitivity
+        'xi':   0.013,   # lapse
         'd':    0.311   # decay
     }
 

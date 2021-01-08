@@ -123,10 +123,10 @@ generated quantities {
   real<lower=0, upper=30> mu_P;
   real<lower=0, upper=1> mu_xi;
   real<lower=0, upper=1> mu_d;
-  real PErew[N,T];
-  real PEpun[N,T];
-  real PEr_choice[N, T];
-  real PEp_choice[N, T];
+  // real PErew[N,T];
+  // real PEpun[N,T];
+  // real PEr_choice[N, T];
+  // real PEp_choice[N, T];
 
   // For log likelihood calculation
   real log_lik[N];
@@ -184,10 +184,10 @@ generated quantities {
         //PEp_fic = -Qp;
 
         // save regressors
-        PErew[i,t] = PEr;
-        PEpun[i,t] = PEp;
-        PEr_choice[i,t] = Qr[choice[i, t]];
-        PEp_choice[i,t] = Qp[choice[i, t]];
+        // PErew[i,t] = PEr;
+        // PEpun[i,t] = PEp;
+        // PEr_choice[i,t] = Qr[choice[i, t]];
+        // PEp_choice[i,t] = Qp[choice[i, t]];
 
         // store chosen deck Q values (rew and pun)
         Qr_chosen = Qr[choice[i, t]];
